@@ -1,0 +1,157 @@
+all:
+  hosts:
+    3ti-HIL1:
+      IP_24: "10.0.101"               # first three octets of the LAN IP address (/24)
+      HUB_MAC: "00:15:5D:65:64:01"    # The MAC of the virtual machine or real machine that the hub is running on
+      HOST_MAC: "00:CE:39:D7:90:84"   # The MAC of the host machine for the VM.
+
+    3ti-0000:
+      IP_24: "10.0.0"
+      HUB_MAC: "00:15:5D:65:64:01"
+      STATIC_IP: "82.16.22.220"
+      GATEWAY: "82.16.22.3"
+
+    3ti-0001:
+      IP_24: "10.0.1"
+      HUB_MAC: "00:CE:39:D3:12:B5"
+
+    3ti-0002:
+      IP_24: "10.0.2"
+      HUB_MAC: "00:CE:39:D3:11:A9"
+      CCTV_MAC: "58:5B:69:1C:58:FB"
+
+    3ti-0003:
+      IP_24: "10.0.3"
+      HUB_MAC: "00:CE:39:D2:8C:6A"
+      CCTV_MAC: "58:5B:69:17:1B:B6"
+ 
+    3ti-0004:
+      IP_24: "10.0.4"
+      HUB_MAC: "00:CE:39:D2:8C:64"
+ 
+    3ti-0005:
+      IP_24: "10.0.5"
+      HUB_MAC: "00:CE:39:D3:4B:C0"
+      CCTV_MAC: "58:5B:69:17:1B:B8"
+ 
+    3ti-0006:
+      IP_24: "10.0.6"
+      HUB_MAC: "00:CE:39:D3:11:A3"
+      CCTV_MAC: "58:5B:69:0D:51:2C"
+ 
+    3ti-0007:
+      IP_24: "10.0.7"
+      HUB_MAC: "00:CE:39:D6:26:DC"
+      CCTV_MAC: "58:5B:69:0D:4F:C6"
+ 
+    3ti-0008:
+      IP_24: "10.0.8"
+      HUB_MAC: "00:CE:39:D2:F3:83"
+      CCTV_MAC: "58:5B:69:0D:51:11"
+ 
+    3ti-0009:
+      IP_24: "10.0.9"
+      HUB_MAC: "00:CE:39:D5:D6:65"
+      CCTV_MAC: "58:5B:69:0D:50:E6"
+ 
+    3ti-0010:
+      IP_24: "10.0.10"
+      HUB_MAC: "00:CE:39:D5:D6:40"
+      CCTV_MAC: "58:5B:69:0D:51:10"
+ 
+    3ti-0011:
+      IP_24: "10.0.11"
+      HUB_MAC: "00:CE:39:D2:9E:52"
+      CCTV_MAC: "58:5B:69:0D:52:B6"
+ 
+    3ti-0012:
+      IP_24: "10.0.12"
+      HUB_MAC: "00:CE:39:D6:25:63"
+      CCTV_MAC: "58:5B:69:0D:52:C6"
+ 
+    3ti-0013:
+      IP_24: "10.0.13"
+      HUB_MAC: "00:CE:39:D3:4B:65"
+      CCTV_MAC: "58:5B:69:26:97:F4"
+
+    3ti-0014:
+      IP_24: "10.0.14"
+      HUB_MAC: "00:CE:39:D5:0F:5B"
+      CCTV_MAC: "58:5B:69:17:1B:B2"
+      STATIC_IP: "192.168.253.3"
+      GATEWAY: "192.168.253.1"
+
+    3ti-0015:
+      IP_24: "10.0.15"
+      HUB_MAC: "00:CE:39:D6:45:08"
+      CCTV_MAC: "58:5B:69:1C:59:01"
+ 
+    3ti-0016:
+      IP_24: "10.0.16"
+      HUB_MAC: "00:CE:39:D6:87:99"
+      CCTV_MAC: "58:5B:69:1C:58:F5"
+ 
+    3ti-0017:
+      IP_24: "10.0.17"
+      HUB_MAC: "00:CE:39:D3:48:16"
+      # VM: 00:15:5D:11:64:00
+ 
+    3ti-0018:
+      IP_24: "10.0.18"
+      HUB_MAC: "00:CE:39:D6:89:6E"
+      CCTV_MAC: "58:5B:69:45:32:75"
+ 
+    3ti-0019:
+      IP_24: "10.0.19"
+      HUB_MAC: "00:CE:39:D6:89:A8"
+      CCTV_MAC: "58:5B:69:45:32:35"
+ 
+    3ti-0020:
+      IP_24: "10.0.20"
+      HUB_MAC: "00:CE:39:D6:89:7A"
+      CCTV_MAC: "58:5B:69:51:66:45"
+ 
+    3ti-0021:
+      IP_24: "10.0.21"
+      HUB_MAC: "00:CE:39:D7:90:78"
+      CCTV_MAC: "58:5B:69:51:66:0B"
+ 
+    3ti-0022:
+      IP_24: "10.0.22"
+      HUB_MAC: "00:CE:39:D6:26:8D"
+      CCTV_MAC: "58:5B:69:57:DF:42"
+ 
+    3ti-0023:
+      IP_24: "10.0.23"
+      HUB_MAC: "00:CE:39:D6:26:7B"
+      CCTV_MAC: "58:5B:69:57:DF:3C"
+ 
+    3ti-0024:
+      IP_24: "10.0.24"
+      HUB_MAC: "00:CE:39:D6:26:C3"
+      CCTV_MAC: "58:5B:69:57:DF:08"
+ 
+    3ti-0025:
+      IP_24: "10.0.25"
+      HUB_MAC: "00:CE:39:D6:26:43"
+      CCTV_MAC: "58:5B:69:57:DF:3A"
+ 
+    3ti-0026:
+      IP_24: "10.0.26"
+      HUB_MAC: "00:CE:39:D7:90:C4"
+      CCTV_MAC: "58:5B:69:57:DF:30"
+ 
+    3ti-0027:
+      IP_24: "10.0.27"
+      HUB_MAC: "00:CE:39:D7:91:99"
+      CCTV_MAC: "58:5B:69:57:DF:32"
+ 
+    3ti-0028:
+      IP_24: "10.0.28"
+      HUB_MAC: "00:CE:39:D7:90:B5"
+      CCTV_MAC: "58:5B:69:57:DF:1C"
+ 
+    3ti-0029:
+      IP_24: "10.0.29"
+      HUB_MAC: "00:CE:39:D7:91:8A"
+      CCTV_MAC: "58:5B:69:60:91:15"

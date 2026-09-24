@@ -1,0 +1,36 @@
+# Any SMS messages received by the RUT will be forwarded the the specified number.
+- name: SMS forwarding
+  community.openwrt.uci:
+    cmd: set
+    config: sms_gateway
+    section: to_sms
+    value:
+      enabled: "1"
+      fwd_number:
+        - "+447441137136"
+      sender_num: "1"
+      every_sms: "1"
+      mode: "everyone"
+
+# Make sure all SMS commands are enabled and set with password authorisation
+#- name: SMS Commands
+#  community.openwrt.uci:
+#    cmd: section
+#    config: sms_utils
+#    type: rule
+#    value:
+#      enabled: "1"
+#      authorization: "password"
+#      allowed_phone: "all"
+
+# The following SMS message will be sent by the RUT when it receives an SMS message with "{{password}} status"
+- name: SMS status command
+  community.openwrt.uci:
+    cmd: section
+    config: sms_utils
+    type: rule
+    find:
+      smstext: "status"
+    value:
+      enabled: "1"
+      message: "Status Request!\nRouter: %rn\nFirmware: %fc\nWAN IP: %wi\nLAN IP: %li\nSignal: %ss dB\nNetwork: %ct %on\nData state: %cs\nRMS Error: %er"

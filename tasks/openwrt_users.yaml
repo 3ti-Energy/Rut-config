@@ -1,0 +1,61 @@
+- name: Check admin user
+  community.openwrt.command:
+    cmd: "id {{ admin_username }}"
+  register: user_check
+  changed_when: false
+  failed_when: user_check.rc not in [0, 123]
+  # Confirmed check_mode support == "none" — skipped under --check by default,
+  # which would leave rut_user_check without an `rc` key and crash the next
+  # task's `when`. This lookup is read-only, so force it to always run.
+  check_mode: false
+
+- name: Create admin user
+  community.openwrt.command:
+    cmd: "adduser -h /user -s /bin/false -G user -DH {{ admin_username }}"
+  when: user_check.rc == 123
+
+
+  # TODO: set passwords
+
+- name: Add RPCd user
+  community.openwrt.uci:
+    cmd: section
+    config: rpcd
+    type: login
+    name: login2
+    find:
+      username: "{{ admin_username }}"
+    value:
+      group: admin
+      username: "{{ admin_username }}"
+
+# Extra stuff that's only needed for old RUTs on firmware 7.15 or lower.
+- name: RUT955 admin permissions
+  community.openwrt.uci:
+    cmd: set
+    config: rpcd
+    section: login2
+    value:
+      password: "$p${{ admin_username }}"
+      read:
+        - "!system/admin/multiusers/users_configuration*"
+        - "!system/admin/profiles*"
+        - "!system/maintenance/backup*"
+        - "!system/flashops*"
+        - "!system/maintenance/cli*"
+        - "!system/wizard*"
+        - "!system/maintenance/uscripts*"
+        - "!superuser"
+        - "*"
+      write:
+        - "!system/admin/multiusers/users_configuration*"
+        - "!system/admin/profiles*"
+        - "!system/maintenance/backup*"
+        - "!system/flashops*"
+        - "!system/maintenance/cli*"
+        - "!system/wizard*"
+        - "!system/maintenance/uscripts*"
+        - "!system/admin/access_control/general*"
+        - "!superuser"
+        - "*"
+  when: ansible_facts.distribution_version is version('00.07.15', '<=')

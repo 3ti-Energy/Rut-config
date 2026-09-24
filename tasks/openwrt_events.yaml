@@ -1,0 +1,197 @@
+# Setup email and phone group for event reporting.
+- name: Phone group
+  community.openwrt.uci:
+    cmd: section
+    config: user_groups
+    type: phone
+    find:
+      name: "3tiAutomation"
+    value:
+      name: "3tiAutomation"
+      tel:
+        - "+447441137136"
+
+- name: Email group
+  community.openwrt.uci:
+    cmd: section
+    config: user_groups
+    type: email
+    find:
+      name: "P3F"
+    value:
+      name: "P3F"
+      senderemail: "notifications@p3f.co.uk"
+      smtp_ip: "smtp.livemail.co.uk"
+      smtp_port: "587"
+      secure_conn: "1"
+      credentials: "1"
+      username: "notifications@p3f.co.uk"
+      password: "{{ vault_smtp_password }}"
+
+# Events
+- name: Events
+  vars:
+    openwrt_events:
+      - name: "WAN switched to main"
+        event: "Failover"
+        event_mark: "Switched to main"
+        level: "INFO"
+        subject: "switched back to main WAN."
+        text: "Router name: %rn\nTimestamp: %ts\nSignal: %ss dB\nNetwork: %ct %on\nData state: %cs\nSIM slot: %su\nEvent text: %et\nLog: %ex"
+        action: "email"
+
+      - name: "WAN switched to backup"
+        event: "Failover"
+        event_mark: "Switched to backup"
+        level: "FAULT"
+        subject: "switched to failover WAN!"
+        text: "Router name: %rn\nTimestamp: %ts\nSignal: %ss dB\nNetwork: %ct %on\nData state: %cs\nSIM slot: %su\nEvent text: %et\nLog: %ex"
+        action: "email"
+
+      - name: "SSH login"
+        event: "SSH"
+        event_mark: "all"
+        level: "WARNING"
+        subject: "SSH authentication attempt!"
+        text: "Router name: %rn\nTimestamp: %ts\nEvent text: %et\nLog: %ex"
+        action: "email"
+
+      - name: "WebUI login"
+        event: "Web UI"
+        event_mark: "all"
+        level: "WARNING"
+        subject: "WebUI authentication attempt!"
+        text: "Router name: %rn\nTimestamp: %ts\nEvent text: %et\nLog: %ex"
+        action: "email"
+
+      - name: "Config change"
+        event: "Config"
+        event_mark: "all"
+        level: "INFO"
+        subject: "Configuration changed."
+        text: "Router name: %rn\nTimestamp: %ts\nEvent text: %et\nLog: %ex"
+        action: "email"
+
+      - name: "SIM switch"
+        event: "SIM switch"
+        event_mark: "all"
+        subject: "SIM switch!"
+        text: "Router name: %rn\nTimestamp: %ts\nEvent text: %et\nLog: %ex"
+        action: "sms"
+      
+      - name: "RUT Reboot"
+        event: "Reboot"
+        event_mark: "all"
+        subject: "Router Reboot Alert!"
+        text: "Router name: %rn\nTimestamp: %ts\nEvent text: %et\nLog: %ex"
+        action: "sms"
+
+  block:
+    - name: Event_juggler setup
+      when: ansible_facts.distribution_version is version('00.07.13', '>=')
+      block:
+        - name: Add Events
+          community.openwrt.uci:
+            cmd: section
+            config: event_juggler
+            type: event
+            name: "{{ i*2 + 1 }}"
+            find:
+              log_event: "{{ item.event }}"
+              log_event_mark: "{{ item.event_mark }}"
+            value:
+              enabled: "1"
+              name: "{{ item.name }}"
+              plugin: "log"
+              log_event: "{{ item.event }}"
+              log_event_mark: "{{ item.event_mark }}"
+              actions:
+                - "{{ i*2 + 2 }}"
+          loop: "{{ openwrt_events }}"
+          loop_control:
+            index_var: i
+            label: "Event: {{ item.name }}"
+
+        - name: Email event actions
+          community.openwrt.uci:
+            cmd: section
+            config: event_juggler
+            type: action
+            name: "{{ i*2 + 2 }}"
+            find:
+              name: "Email - {{ item.name }}"
+            value:
+              enabled: "1"
+              name: "Email - {{ item.name }}"
+              plugin: "smtp"
+              smtp_subject: "{{ item.level }} - {{ item.subject }}"
+              smtp_text: "{{ item.text }}"
+              smtp_email_group: "P3F"
+              smtp_recipients:
+                - "automate.{{ item.level | lower }}@3ti.co.uk"
+          loop: "{{ openwrt_events }}"
+          when: item.action == "email"
+          loop_control:
+            index_var: i
+            label: "Action: {{ item.name }}"
+
+        - name: SMS event actions
+          community.openwrt.uci:
+            cmd: section
+            config: event_juggler
+            type: action
+            name: "{{ i*2 + 2 }}"
+            find:
+              name: "SMS - {{ item.name }}"
+            value:
+              enabled: "1"
+              name: "SMS - {{ item.name }}"
+              plugin: "sms"
+              sms_text: "{{ item.subject }}\n{{ item.text }}"
+              sms_recipient_format: "group"
+              sms_group: "3tiAutomation"
+          loop: "{{ openwrt_events }}"
+          when: item.action == "sms"
+          loop_control:
+            index_var: i
+            label: "Action: {{ item.name }}"
+
+# Old Events_reporting service for RUT955
+    - name: Events_reporting setup
+      when: ansible_facts.distribution_version is version('00.07.13', '<')
+      block:
+        - name: Email Events
+          community.openwrt.uci:
+            cmd: section
+            config: events_reporting
+            type: rule
+            find:
+              event: "{{ item.event }}"
+              eventMark: "{{ item.event_mark }}"
+            value:
+              enable: "1"
+              event: "{{ item.event }}"
+              eventMark: "{{ item.event_mark }}"
+              action: "sendEmail"
+              subject: "{{ item.level }} - {{ item.subject }}"
+              message: "{{ item.text }}"
+              emailgroup: "P3F"
+              recipEmail:
+                - "automate.{{ item.level | lower }}@3ti.co.uk"
+
+        - name: SMS Events
+          community.openwrt.uci:
+            cmd: section
+            config: events_reporting
+            type: rule
+            find:
+              event: "{{ item.event }}"
+              eventMark: "{{ item.event_mark }}"
+            value:
+              enable: "1"
+              event: "{{ item.event }}"
+              eventMark: "{{ item.event_mark }}"
+              action: "sendSMS"
+              message: "{{ item.subject }}\n{{ item.text }}"
+              recipient_format: "group"
+              group: "3tiAutomation"

@@ -1,0 +1,54 @@
+- name: Set router hostname
+  community.openwrt.uci:
+    cmd: set
+    config: system
+    section: system
+    value:
+      devicename: "{{ inventory_hostname }}-RUT"
+      hostname: "{{ inventory_hostname | lower }}-RUT"
+
+- name: Disable WebUI setup prompt
+  community.openwrt.uci:
+    cmd: absent
+    config: vuci      # VUCI is Teltonika's WebUI for OpenWRT
+    section: main
+    option: firstlogin
+
+# Necessary for the hub's ubus requests
+- name: Disable HTTPS redirection
+  community.openwrt.uci:
+    cmd: set
+    config: uhttpd  # uHTTPd is the HTTP server in OpenWRT that server the WebUI and REST API
+    section: main
+    value:
+      redirect_https: "0"
+
+# The relay output controls power to the hub and allows restarting it
+- name: Explicitly set relay to normally open
+  community.openwrt.uci:
+    cmd: set
+    config: ioman
+    section: relay0
+    value:
+      state: "open"
+
+- name: Modbus server
+  community.openwrt.uci:
+    cmd: section
+    config: modbus_server
+    type: rtu_device
+    name: 1
+    find:
+      device: "/dev/rs485"
+    value:
+      enabled: "1"
+      name: "3ti"
+      device: "/dev/rs485"
+      device_id: "10"
+      baudrate: "19200"
+      databits: "8"
+      parity: "none"
+      stopbits: "1"
+      flowcontrol: "none"
+      full_duplex_enabled: "0"
+      clientregs: "0"

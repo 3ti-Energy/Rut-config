@@ -1,0 +1,80 @@
+- name: eth wan failover
+  community.openwrt.uci:
+    cmd: set
+    config: mwan3
+    section: wan
+    value:
+      enabled: "1"
+      interval: "10"
+      flush_conntrack:
+        - "connected"
+
+- name: mobile failover
+  community.openwrt.uci:
+    cmd: set
+    config: mwan3
+    section: "{{ item }}"
+    value:
+      enabled: "1"
+      interval: "15"
+  loop:
+    - mob1s1a1
+    - mob1s2a1
+  loop_control:
+    label: "mwan3.{{ item }}"
+
+- name: failover ranking
+  community.openwrt.uci:
+    cmd: set
+    config: mwan3
+    section: "{{ item.section }}"
+    value:
+      metric: "{{ item.metric }}"
+  loop:
+    - { section: wan_member_mwan, metric: 1 }
+    - { section: mob1s1a1_member_mwan, metric: 2 }
+    - { section: mob1s2a1_member_mwan, metric: 3 }
+  loop_control:
+    label: "mwan3.{{ item.section }}"
+
+- name: Failover checking
+  community.openwrt.uci:
+    cmd: section
+    config: mwan3
+    type: condition
+    find:
+      interface: "{{ item }}"
+    value:
+      track_method: "wgetping"
+      track_ip:
+        - "https://www.google.co.uk/"
+      reliability: "1"
+      count: "3"
+      up: "3"
+      down: "3"
+      timeout: "2"
+  loop:
+    - wan
+    - mob1s1a1
+    - mob1s2a1
+
+- name: SIM card failover
+  community.openwrt.uci:
+    cmd: section
+    config: sim_switch
+    type: sim
+    find:
+      position: "{{ item }}"
+    value:
+      enabled: "1"
+      interval: "30"
+      retry_count: "3"
+      no_network: "1"
+      denied: "1"
+      fail_flag: "1"
+      data_fail: "1"
+      data_fail_host: "8.8.8.8"
+      data_fail_timeout: "3"
+  loop:
+    - 1
+    - 2

@@ -1,0 +1,167 @@
+- name: Router IP
+  community.openwrt.uci:
+    cmd: set
+    config: network
+    section: lan
+    value:
+      ipaddr: "{{ IP_24 }}.254"
+
+# Only applies to sites with a static IP defined
+- name: Static WAN IP
+  community.openwrt.uci:
+    cmd: set
+    config: network
+    section: wan
+    value:
+      proto: "static"
+      ipaddr: "{{ STATIC_IP }}"
+      netmask: "255.255.255.0"
+      gateway: "{{ GATEWAY }}"
+  when: STATIC_IP is defined
+
+- name: LAN DHCP settings
+  community.openwrt.uci:
+    cmd: set
+    config: dhcp
+    section: lan
+    value:
+      # DHCP address range 50 to 150. (101 addresses)
+      start: "50"
+      limit: "101"
+      force: "1"  # Force this DHCP server to be used over others
+      # Explicitly enable DHCP on IPv4 and IPv6
+      dhcpv6: "server"
+      ra: "server"
+
+- name: Local DNS settings
+  community.openwrt.uci:
+    cmd: set
+    config: dhcp
+    section: "@dnsmasq[0]"
+    value:
+      # Set URL override for hub.3ti.co.uk to point to the hub IP address.
+      # Important for charge points that need TLS connections to the hub.
+      address:
+        - "/hub.3ti.co.uk/{{ IP_24 }}.100"
+      # Make sure DNS is enabled on LAN.
+      interface: "lan"
+
+# Set static leases
+- name: Hub static IP
+  vars:
+    ip: "{{ IP_24 }}.100"
+  community.openwrt.uci:
+    cmd: section
+    config: dhcp
+    type: host
+    find:
+      ip: "{{ ip }}"
+    value:
+      name: "{{ inventory_hostname }}"
+      mac: "{{ HUB_MAC }}"
+      ip: "{{ ip }}"
+
+- name: CCTV static IP
+  vars:
+    ip: "{{ IP_24 }}.110"
+  community.openwrt.uci:
+    cmd: section
+    config: dhcp
+    type: host
+    find:
+      ip: "{{ ip }}"
+    value:
+      name: "CCTV"
+      mac: "{{ CCTV_MAC }}"
+      ip: "{{ ip }}"
+  when: CCTV_MAC is defined
+
+- name: Host machine static IP
+  vars:
+    ip: "{{ IP_24 }}.101"
+  community.openwrt.uci:
+    cmd: section
+    config: dhcp
+    type: host
+    find:
+      ip: "{{ ip }}"
+    value:
+      name: "{{ inventory_hostname }}-host"
+      mac: "{{ HOST_MAC }}"
+      ip: "{{ ip }}"
+  when: HOST_MAC is defined
+
+- name: IPv4 DNS
+  community.openwrt.uci:
+    cmd: set
+    config: network
+    section: wan
+    value:
+      dns:
+        - "8.8.8.8"
+        - "8.8.4.4"
+      peerdns: "0"
+
+- name: IPv6 DNS
+  community.openwrt.uci:
+    cmd: set
+    config: network
+    section: wan6
+    value:
+      dns:
+        - "2001:4860:4860::8888"
+        - "2001:4860:4860::8844"
+      peerdns: "0"
+
+# SIM cards
+- name: SIM 1 APN
+  community.openwrt.uci:
+    cmd: set
+    config: network
+    section: mob1s1a1
+    value:
+      metric: "3"
+      force_link: "1"
+      auto_apn: "1"
+      auth: "none"
+
+- name: SIM 2 APN
+  community.openwrt.uci:
+    cmd: set
+    config: network
+    section: mob1s2a1
+    value:
+      metric: "4"
+      force_link: "1"
+      auto_apn: "0"
+      auth: "pap"
+      apn: "eapn1.net"
+      username: "{{ vault_apn_username }}"
+      password: "{{ vault_apn_password }}"
+
+# WiFi
+- name: WiFi key
+  community.openwrt.uci:
+    cmd: set
+    config: wireless
+    section: default_radio0
+    value:
+      ssid: "{{ inventory_hostname }}-staff"
+      key: "{{ WIFI_KEY }}"
+
+- name: WiFi delete radio1
+  community.openwrt.uci:
+    cmd: absent
+    config: wireless
+    section: default_radio1
+
+- name: RUTM55 second radio
+  community.openwrt.uci:
+    cmd: set
+    config: wireless
+    section: default_radio0
+    value:
+      device:
+        - "radio0"
+        - "radio1"
+  when: ansible_facts.openwrt_board.model == "Teltonika RUTM55"

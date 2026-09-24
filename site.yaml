@@ -1,0 +1,24 @@
+---
+- hosts: all
+  gather_facts: false
+  vars:
+    ansible_host: "{{ IP_24 }}.254"
+    ansible_user: root
+    ansible_ssh_pass: "{{ vault_rut_current_pass }}"
+    openwrt_remote_tmp: /tmp
+    admin_username: "admin-{{ inventory_hostname | lower }}"
+
+  tasks:
+    - name: Gather OpenWrt facts
+      community.openwrt.setup:
+
+    - import_tasks: tasks/openwrt_users.yaml
+    - import_tasks: tasks/openwrt_system.yaml
+    - import_tasks: tasks/openwrt_network.yaml
+    - import_tasks: tasks/openwrt_failover.yaml
+    - import_tasks: tasks/openwrt_sms.yaml
+    - import_tasks: tasks/openwrt_events.yaml
+
+    - name: Commit UCI changes
+      community.openwrt.uci:
+        cmd: commit
