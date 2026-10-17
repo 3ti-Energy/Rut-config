@@ -178,6 +178,10 @@
               emailgroup: "P3F"
               recipEmail:
                 - "automate.{{ item.level | lower }}@3ti.co.uk"
+            loop: "{{ openwrt_events }}"
+            when: item.action == "email"
+            loop_control:
+              label: "Action: {{ item.name }}"
 
         - name: SMS Events
           community.openwrt.uci:
@@ -195,3 +199,7 @@
               message: "{{ item.subject }}\n{{ item.text }}"
               recipient_format: "group"
               group: "3tiAutomation"
+            loop: "{{ openwrt_events }}"
+            when: item.action == "sms"
+            loop_control:
+              label: "Action: {{ item.name }}"

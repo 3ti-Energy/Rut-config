@@ -4,7 +4,7 @@
     config: mwan3
     section: wan
     value:
-      enabled: "1"
+      enabled: "{{ wired | int }}"
       interval: "10"
       flush_conntrack:
         - "connected"
@@ -15,12 +15,14 @@
     config: mwan3
     section: "{{ item }}"
     value:
-      enabled: "1"
-      interval: "15"
+      enabled: "{{ ((no_sims | int) == 2 or (default_sim | int) == (i+1 | int)) | int }}"
+      interval: "30"
+    replace: true
   loop:
     - mob1s1a1
     - mob1s2a1
   loop_control:
+    index_var: i
     label: "mwan3.{{ item }}"
 
 - name: failover ranking
@@ -30,10 +32,12 @@
     section: "{{ item.section }}"
     value:
       metric: "{{ item.metric }}"
+  vars:
+    sim_base: "{{ 2 if (wired | bool) else 1 }}"
   loop:
-    - { section: wan_member_mwan, metric: 1 }
-    - { section: mob1s1a1_member_mwan, metric: 2 }
-    - { section: mob1s2a1_member_mwan, metric: 3 }
+    - { section: wan_member_mwan,      metric: "{{ 1 if (wired | bool) else 3 }}" }
+    - { section: mob1s1a1_member_mwan, metric: "{{ (sim_base | int) + (0 if (default_sim | int) == 1 else 1) }}" }
+    - { section: mob1s2a1_member_mwan, metric: "{{ (sim_base | int) + (0 if (default_sim | int) == 2 else 1) }}" }
   loop_control:
     label: "mwan3.{{ item.section }}"
 
@@ -43,18 +47,32 @@
     config: mwan3
     type: condition
     find:
+      interface: "wan"
+    value:
+      track_method: "wgetping"
+      track_ip:
+        - "https://www.google.co.uk"
+      reliability: "1"
+      count: "1"
+      up: "3"
+      down: "3"
+
+- name: Mobile Failover checking
+  community.openwrt.uci:
+    cmd: section
+    config: mwan3
+    type: condition
+    find:
       interface: "{{ item }}"
     value:
       track_method: "wgetping"
       track_ip:
-        - "https://www.google.co.uk/"
+        - "https://rutreachability3ti.z33.web.core.windows.net"
       reliability: "1"
-      count: "3"
+      count: "1"
       up: "3"
       down: "3"
-      timeout: "2"
   loop:
-    - wan
     - mob1s1a1
     - mob1s2a1
 
@@ -66,15 +84,44 @@
     find:
       position: "{{ item }}"
     value:
-      enabled: "1"
+    # Only enabled if no_sims is greater than 1
+      enabled: "{{ (no_sims | int) > 1 | int }}"
       interval: "30"
       retry_count: "3"
       no_network: "1"
       denied: "1"
       fail_flag: "1"
-      data_fail: "1"
+      data_fail: "2"
       data_fail_host: "8.8.8.8"
       data_fail_timeout: "3"
+      #sim_not_ready: "0"
+  loop:
+    - 1
+    - 2
+
+# Switch back to 1p Mobile after 15 minutes
+- name: SIM card switchback
+  when: no_sims > 1
+  community.openwrt.uci:
+    cmd: section
+    config: sim_switch
+    type: sim
+    find:
+    # Only do this on the backup SIM
+      position: "{{ 2 if (default_sim | int) == 1 else 1 }}"
+    value:
+      enable_back: "1"
+      switch_back: "15"
+
+- name: Default SIM
+  community.openwrt.uci:
+    cmd: section
+    config: simcard
+    type: sim
+    find:
+      position: "{{ item }}"
+    value:
+      primary: "{{ ((default_sim | int) == (item | int)) | int}}"
   loop:
     - 1
     - 2

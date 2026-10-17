@@ -1,14 +1,36 @@
 ---
 - hosts: all
   gather_facts: false
+  serial: 1
   vars:
     ansible_host: "{{ IP_24 }}.254"
     ansible_user: root
-    ansible_ssh_pass: "{{ vault_rut_current_pass }}"
+    ansible_password: "{{ admin_password }}"
     openwrt_remote_tmp: /tmp
     admin_username: "admin-{{ inventory_hostname | lower }}"
 
   tasks:
+    - name: Get device passwords
+      no_log: true
+      delegate_to: localhost  # Run this on localhost because we need to do this before we log into the target machine
+      block:
+      - name: Get device device Settings
+        ansible.builtin.uri:
+          url: "http://{{ IP_24 }}.100:5003/api/settings"
+          method: GET
+          return_content: true
+        register: deviceSettings
+        check_mode: false
+
+      - name: Extract passwords
+        ansible.builtin.set_fact:
+          wifi_password: "{{ settings[13] | default('') }}"
+          admin_password: "{{ settings[11] | default('') }}"
+          admin_3ti_password: "{{ settings[12] | default('') }}"
+        vars:
+          settings: "{{ deviceSettings.json | items2dict(key_name='deviceTypeSettingID', value_name='deviceValueString') }}"
+
+
     - name: Gather OpenWrt facts
       community.openwrt.setup:
 
@@ -19,6 +41,41 @@
     - import_tasks: tasks/openwrt_sms.yaml
     - import_tasks: tasks/openwrt_events.yaml
 
-    - name: Commit UCI changes
+    - name: show staged changes
       community.openwrt.uci:
-        cmd: commit
+        cmd: changes
+      register: staged
+      changed_when: false
+
+    - ansible.builtin.debug:
+        var: staged.result.splitlines()
+
+    - name: approve
+      ansible.builtin.pause:
+        prompt: "Apply these changes? (yes/no)"
+      register: approval
+      when: >-
+        ansible_play_batch
+        | map('extract', hostvars)
+        | map(attribute='staged.result', default='')
+        | map('trim') | select | list | length > 0
+
+    - when:
+        - staged.result | trim | length > 0
+        - approval.user_input is defined
+      block:
+        - name: commit
+          community.openwrt.uci:
+            cmd: commit
+          when: approval.user_input | lower == 'yes'
+          notify: reload config
+
+        - name: discard
+          community.openwrt.uci:
+            cmd: revert
+          when: approval.user_input | lower != 'yes'
+
+  handlers:
+    - name: reload config
+      community.openwrt.command:
+        cmd: "reload_config"

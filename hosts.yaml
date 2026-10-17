@@ -5,15 +5,24 @@ all:
       HUB_MAC: "00:15:5D:65:64:01"    # The MAC of the virtual machine or real machine that the hub is running on
       HOST_MAC: "00:CE:39:D7:90:84"   # The MAC of the host machine for the VM.
 
+    3ti-RBH1:
+      IP_24: "10.200.0"
+      ansible_host: "10.200.0.1"
+      default_sim: 1
+
     3ti-0000:
       IP_24: "10.0.0"
       HUB_MAC: "00:15:5D:65:64:01"
       STATIC_IP: "82.16.22.220"
       GATEWAY: "82.16.22.3"
+      default_sim: 1
 
     3ti-0001:
       IP_24: "10.0.1"
       HUB_MAC: "00:CE:39:D3:12:B5"
+      default_sim: 1
+      no_sims: 2
+      wired: false
 
     3ti-0002:
       IP_24: "10.0.2"
@@ -28,6 +37,7 @@ all:
     3ti-0004:
       IP_24: "10.0.4"
       HUB_MAC: "00:CE:39:D2:8C:64"
+      CCTV_MAC: "58:5B:69:1C:58:D6"
  
     3ti-0005:
       IP_24: "10.0.5"
@@ -48,6 +58,7 @@ all:
       IP_24: "10.0.8"
       HUB_MAC: "00:CE:39:D2:F3:83"
       CCTV_MAC: "58:5B:69:0D:51:11"
+      default_sim: 1
  
     3ti-0009:
       IP_24: "10.0.9"
@@ -73,6 +84,7 @@ all:
       IP_24: "10.0.13"
       HUB_MAC: "00:CE:39:D3:4B:65"
       CCTV_MAC: "58:5B:69:26:97:F4"
+      default_sim: 1
 
     3ti-0014:
       IP_24: "10.0.14"
@@ -85,11 +97,17 @@ all:
       IP_24: "10.0.15"
       HUB_MAC: "00:CE:39:D6:45:08"
       CCTV_MAC: "58:5B:69:1C:59:01"
+      default_sim: 1
+      no_sims: 2
+      wired: false
  
     3ti-0016:
       IP_24: "10.0.16"
       HUB_MAC: "00:CE:39:D6:87:99"
       CCTV_MAC: "58:5B:69:1C:58:F5"
+      default_sim: 1
+      no_sims: 2
+      #wired: false
  
     3ti-0017:
       IP_24: "10.0.17"
@@ -100,11 +118,15 @@ all:
       IP_24: "10.0.18"
       HUB_MAC: "00:CE:39:D6:89:6E"
       CCTV_MAC: "58:5B:69:45:32:75"
+      default_sim: 1
+      no_sims: 2
  
     3ti-0019:
       IP_24: "10.0.19"
       HUB_MAC: "00:CE:39:D6:89:A8"
       CCTV_MAC: "58:5B:69:45:32:35"
+      default_sim: 1
+      no_sims: 2
  
     3ti-0020:
       IP_24: "10.0.20"
@@ -120,6 +142,8 @@ all:
       IP_24: "10.0.22"
       HUB_MAC: "00:CE:39:D6:26:8D"
       CCTV_MAC: "58:5B:69:57:DF:42"
+      no_sims: 2
+      wired: false
  
     3ti-0023:
       IP_24: "10.0.23"

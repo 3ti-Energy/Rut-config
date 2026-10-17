@@ -10,12 +10,23 @@
   check_mode: false
 
 - name: Create admin user
+  when: user_check.rc == 123
   community.openwrt.command:
     cmd: "adduser -h /user -s /bin/false -G user -DH {{ admin_username }}"
-  when: user_check.rc == 123
 
 
   # TODO: set passwords
+
+#- name: Set root and admin passwords
+#  community.openwrt.command:
+#    cmd: chpasswd
+#    args:
+#      stdin: |
+#        root:{{ root_password }}
+#        admin:{{ admin_password }}
+#  no_log: true
+
+
 
 - name: Add RPCd user
   community.openwrt.uci:
@@ -31,6 +42,7 @@
 
 # Extra stuff that's only needed for old RUTs on firmware 7.15 or lower.
 - name: RUT955 admin permissions
+  when: ansible_facts.distribution_version is version('00.07.15', '<=')
   community.openwrt.uci:
     cmd: set
     config: rpcd
@@ -58,4 +70,3 @@
         - "!system/admin/access_control/general*"
         - "!superuser"
         - "*"
-  when: ansible_facts.distribution_version is version('00.07.15', '<=')
