@@ -27,6 +27,7 @@
       credentials: "1"
       username: "notifications@p3f.co.uk"
       password: "{{ vault_smtp_password }}"
+  no_log: true
 
 # Events
 - name: Events
@@ -88,7 +89,7 @@
 
   block:
     - name: Event_juggler setup
-      when: ansible_facts.distribution_version is version('00.07.13', '>=')
+      when: "'event_juggler' in (ansible_facts.openwrt_services | default({}))"
       block:
         - name: Add Events
           community.openwrt.uci:
@@ -158,7 +159,9 @@
 
 # Old Events_reporting service for RUT955
     - name: Events_reporting setup
-      when: ansible_facts.distribution_version is version('00.07.13', '<')
+      when:
+        - "'events_reporting' in (ansible_facts.openwrt_services | default({}))"
+        - "'event_juggler' not in (ansible_facts.openwrt_services | default({}))"
       block:
         - name: Email Events
           community.openwrt.uci:
@@ -178,10 +181,10 @@
               emailgroup: "P3F"
               recipEmail:
                 - "automate.{{ item.level | lower }}@3ti.co.uk"
-            loop: "{{ openwrt_events }}"
-            when: item.action == "email"
-            loop_control:
-              label: "Action: {{ item.name }}"
+          loop: "{{ openwrt_events }}"
+          when: item.action == "email"
+          loop_control:
+            label: "Action: {{ item.name }}"
 
         - name: SMS Events
           community.openwrt.uci:
@@ -199,7 +202,7 @@
               message: "{{ item.subject }}\n{{ item.text }}"
               recipient_format: "group"
               group: "3tiAutomation"
-            loop: "{{ openwrt_events }}"
-            when: item.action == "sms"
-            loop_control:
-              label: "Action: {{ item.name }}"
+          loop: "{{ openwrt_events }}"
+          when: item.action == "sms"
+          loop_control:
+            label: "Action: {{ item.name }}"

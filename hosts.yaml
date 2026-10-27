@@ -2,8 +2,7 @@ all:
   hosts:
     3ti-HIL1:
       IP_24: "10.0.101"               # first three octets of the LAN IP address (/24)
-      HUB_MAC: "00:15:5D:65:64:01"    # The MAC of the virtual machine or real machine that the hub is running on
-      HOST_MAC: "00:CE:39:D7:90:84"   # The MAC of the host machine for the VM.
+      HUB_MAC: "00:CE:39:D7:90:84"
 
     3ti-RBH1:
       IP_24: "10.200.0"
@@ -12,7 +11,7 @@ all:
 
     3ti-0000:
       IP_24: "10.0.0"
-      HUB_MAC: "00:15:5D:65:64:01"
+      HUB_MAC: "00:CE:39:D6:26:97"
       STATIC_IP: "82.16.22.220"
       GATEWAY: "82.16.22.3"
       default_sim: 1

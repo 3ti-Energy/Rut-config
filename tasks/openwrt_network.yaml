@@ -142,9 +142,12 @@
 # WiFi
 - name: WiFi key
   community.openwrt.uci:
-    cmd: set
+    cmd: section
     config: wireless
-    section: default_radio0
+    type: wifi-iface
+    find:
+      device: "radio0"
+      mode: "ap"
     value:
       ssid: "{{ inventory_hostname }}-staff"
       key: "{{ wifi_password }}"
