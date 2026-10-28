@@ -1,0 +1,65 @@
+# Set static leases: Hub and Debian
+- name: Hub static IP
+  vars:
+    ip: "{{ IP_24 }}.100"
+  community.openwrt.uci:
+    cmd: section
+    config: dhcp
+    type: host
+    find:
+      ip: "{{ ip }}"
+    value:
+      name: "{{ inventory_hostname }}"
+      mac: "{{ HUB_MAC }}"
+      ip: "{{ ip }}"
+
+- name: Host machine static IP
+  when: HOST_MAC is defined
+  vars:
+    ip: "{{ IP_24 }}.101"
+  community.openwrt.uci:
+    cmd: section
+    config: dhcp
+    type: host
+    find:
+      ip: "{{ ip }}"
+    value:
+      name: "{{ inventory_hostname }}-host"
+      mac: "{{ HOST_MAC }}"
+      ip: "{{ ip }}"
+
+- name: Local DNS settings
+  community.openwrt.uci:
+    cmd: set
+    config: dhcp
+    section: "@dnsmasq[0]"
+    value:
+      # Set URL override for hub.3ti.co.uk to point to the hub IP address.
+      # Important for charge points that need TLS connections to the hub.
+      address:
+        - "/hub.3ti.co.uk/{{ IP_24 }}.100"
+      # Make sure DNS is enabled on LAN.
+      interface: "lan"
+
+- name: Update opkg cache and install uhttpd-mod-ubus for Hub integration
+  community.openwrt.opkg:
+    name: uhttpd-mod-ubus
+    state: present
+    update_cache: true
+
+- name: Set the ubus prefix to /ubus
+  community.openwrt.uci:
+    cmd: set
+    config: uhttpd
+    section: main
+    value:
+      ubus_prefix: "/ubus"
+
+# Necessary for the hub's ubus requests
+- name: Disable HTTPS redirection
+  community.openwrt.uci:
+    cmd: set
+    config: uhttpd  # uHTTPd is the HTTP server in OpenWRT that server the WebUI and REST API
+    section: main
+    value:
+      redirect_https: "0"

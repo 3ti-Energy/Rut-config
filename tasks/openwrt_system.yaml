@@ -14,15 +14,6 @@
     section: main
     option: firstlogin
 
-# Necessary for the hub's ubus requests
-- name: Disable HTTPS redirection
-  community.openwrt.uci:
-    cmd: set
-    config: uhttpd  # uHTTPd is the HTTP server in OpenWRT that server the WebUI and REST API
-    section: main
-    value:
-      redirect_https: "0"
-
 # The relay output controls power to the hub and allows restarting it
 - name: Explicitly set relay to normally open
   community.openwrt.uci:
@@ -52,17 +43,3 @@
       flowcontrol: "none"
       full_duplex_enabled: "0"
       clientregs: "0"
-
-- name: Update opkg cache and install uhttpd-mod-ubus for Hub integration
-  community.openwrt.opkg:
-    name: uhttpd-mod-ubus
-    state: present
-    update_cache: true
-
-- name: Set the ubus prefix to /ubus
-  community.openwrt.uci:
-    cmd: set
-    config: uhttpd
-    section: main
-    value:
-      ubus_prefix: "/ubus"

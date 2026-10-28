@@ -33,34 +33,6 @@
       dhcpv6: "server"
       ra: "server"
 
-- name: Local DNS settings
-  community.openwrt.uci:
-    cmd: set
-    config: dhcp
-    section: "@dnsmasq[0]"
-    value:
-      # Set URL override for hub.3ti.co.uk to point to the hub IP address.
-      # Important for charge points that need TLS connections to the hub.
-      address:
-        - "/hub.3ti.co.uk/{{ IP_24 }}.100"
-      # Make sure DNS is enabled on LAN.
-      interface: "lan"
-
-# Set static leases
-- name: Hub static IP
-  vars:
-    ip: "{{ IP_24 }}.100"
-  community.openwrt.uci:
-    cmd: section
-    config: dhcp
-    type: host
-    find:
-      ip: "{{ ip }}"
-    value:
-      name: "{{ inventory_hostname }}"
-      mac: "{{ HUB_MAC }}"
-      ip: "{{ ip }}"
-
 - name: CCTV static IP
   when: CCTV_MAC is defined
   vars:
@@ -74,21 +46,6 @@
     value:
       name: "CCTV"
       mac: "{{ CCTV_MAC }}"
-      ip: "{{ ip }}"
-
-- name: Host machine static IP
-  when: HOST_MAC is defined
-  vars:
-    ip: "{{ IP_24 }}.101"
-  community.openwrt.uci:
-    cmd: section
-    config: dhcp
-    type: host
-    find:
-      ip: "{{ ip }}"
-    value:
-      name: "{{ inventory_hostname }}-host"
-      mac: "{{ HOST_MAC }}"
       ip: "{{ ip }}"
 
 - name: IPv4 DNS
