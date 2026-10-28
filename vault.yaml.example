@@ -1,0 +1,6 @@
+# SMTP (events_reporting email account: notifications@p3f.co.uk)
+vault_smtp_password: "SMPT_PASSWORD_HERE"
+ 
+# Mobile data APN (SIM slot 2)
+vault_apn_username: "APN_USERNAME_HERE"
+vault_apn_password: "APN_PASSWORD_HERE"

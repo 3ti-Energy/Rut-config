@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./group_vars/all/vault.yaml)",
+      "Read(**/group_vars/all/vault.yaml)"
+    ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "denyRead": [
+        "group_vars/all/vault.yaml"
+      ]
+    }
+  }
+}
