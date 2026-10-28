@@ -52,3 +52,17 @@
       flowcontrol: "none"
       full_duplex_enabled: "0"
       clientregs: "0"
+
+- name: Update opkg cache and install uhttpd-mod-ubus for Hub integration
+  community.openwrt.opkg:
+    name: uhttpd-mod-ubus
+    state: present
+    update_cache: true
+
+- name: Set the ubus prefix to /ubus
+  community.openwrt.uci:
+    cmd: set
+    config: uhttpd
+    section: main
+    value:
+      ubus_prefix: "/ubus"
