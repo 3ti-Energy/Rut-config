@@ -1,0 +1,15 @@
+- name: Add authorised SSH keys
+  vars:
+    admin_keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID6fjdy14I7vWKoqOhzdQ6ZbpXXdXGlt5AAPWNTkySZ8 chris.wait@3ti.co.uk"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGhjuXR5albho7DEITbrJpduS8dRDRUk8cFgQaMlobFr ramy@3ti10114"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAoHwo11RM6WZMqR2I/grBU0GOLb3c4qMknWlrN0Q3m3 ramy@wsl_3ti10114"
+  block:
+      - community.openwrt.file:
+          path: /etc/dropbear
+          state: directory
+          mode: "0700"
+      - community.openwrt.copy:
+          dest: /etc/dropbear/authorized_keys
+          content: "{{ admin_keys | join('\n') }}\n"
+          mode: "0600"

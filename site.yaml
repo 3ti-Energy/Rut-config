@@ -41,6 +41,7 @@
     - import_tasks: tasks/openwrt_sms.yaml
     - import_tasks: tasks/openwrt_events.yaml
     - import_tasks: tasks/openwrt_hub.yaml
+    - import_tasks: tasks/openwrt_ssh.yaml
 
     - name: show staged changes
       community.openwrt.uci:
