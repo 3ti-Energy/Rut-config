@@ -14,19 +14,14 @@
   community.openwrt.command:
     cmd: "adduser -h /user -s /bin/false -G user -DH {{ admin_username }}"
 
-
-  # TODO: set passwords
-
-#- name: Set root and admin passwords
-#  community.openwrt.command:
-#    cmd: chpasswd
-#    args:
-#      stdin: |
-#        root:{{ root_password }}
-#        admin:{{ admin_password }}
-#  no_log: true
-
-
+- name: Set root and admin passwords
+  raw: |
+    chpasswd <<'EOF'
+    {{ admin_username }}:{{ admin_3ti_password }}
+    root:{{ admin_password }}
+    admin:{{ admin_password }}
+    EOF
+  no_log: true
 
 - name: Add RPCd user
   community.openwrt.uci:
